@@ -49,38 +49,38 @@ export interface Claim {
 
 export const ClaimAPI = {
   getAll: (): Promise<Claim[]> =>
-    api.get("/insurance-claims").then((r) => r.data),
+    api.get("/insurance-Claims").then((r) => r.data),
 
   getOne: (id: string): Promise<Claim> =>
-    api.get(`/insurance-claims/${id}`).then((r) => r.data),
+    api.get(`/insurance-Claims/${id}`).then((r) => r.data),
 
   review: (id: string) =>
-    api.patch(`/insurance-claims/${id}/review`).then((r) => r.data),
+    api.patch(`/insurance-Claims/${id}/review`).then((r) => r.data),
 
   approve: (id: string, approvedAmount: number) =>
-    api.patch(`/insurance-claims/${id}/approve`, { approvedAmount }).then((r) => r.data),
+    api.patch(`/insurance-Claims/${id}/approve`, { approvedAmount }).then((r) => r.data),
 
   reject: (id: string, rejectionReason: string) =>
-    api.patch(`/insurance-claims/${id}/reject`, { rejectionReason }).then((r) => r.data),
+    api.patch(`/insurance-Claims/${id}/reject`, { rejectionReason }).then((r) => r.data),
 
   markPaid: (id: string) =>
-    api.patch(`/insurance-claims/${id}/pay`).then((r) => r.data),
+    api.patch(`/insurance-Claims/${id}/pay`).then((r) => r.data),
 
   update: (id: string, data: { fileName?: string }) =>
-    api.patch(`/insurance-claims/${id}`, data).then((r) => r.data),
+    api.patch(`/insurance-Claims/${id}`, data).then((r) => r.data),
 
   getAttachments: (id: string) =>
-    api.get(`/insurance-claims/${id}/attachments`).then((r) => r.data),
+    api.get(`/insurance-Claims/${id}/attachments`).then((r) => r.data),
 
   addAttachment: (id: string, data: { fileName: string; fileUrl: string; type?: string }) =>
-    api.post(`/insurance-claims/${id}/attachments`, data).then((r) => r.data),
+    api.post(`/insurance-Claims/${id}/attachments`, data).then((r) => r.data),
 
   getMessages: (id: string) =>
-    api.get(`/insurance-claims/${id}/messages`).then((r) => r.data),
+    api.get(`/insurance-Claims/${id}/messages`).then((r) => r.data),
 
   sendMessage: (id: string, message: string) =>
-    api.post(`/insurance-claims/${id}/messages`, { message }).then((r) => r.data),
+    api.post(`/insurance-Claims/${id}/messages`, { message }).then((r) => r.data),
 
   getTimeline: (id: string) =>
-    api.get(`/claims/${id}/timeline`).then((r) => r.data),
+    api.get(`/insurance-Claims/${id}/timeline`).then((r) => r.data),
 };

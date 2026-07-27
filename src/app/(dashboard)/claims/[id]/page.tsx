@@ -3,19 +3,38 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import api from "@/lib/api";
 import { ClaimAPI, Claim } from "@/services/claims";
 import ClaimStatusBadge from "@/components/claims/ClaimStatusBadge";
 import {
   ArrowLeft, User, Building2, Receipt, Loader2, AlertCircle,
   CheckCircle2, XCircle, ClipboardCheck, Wallet, X,
-  Paperclip, MessageSquare, Activity, HeartPulse, Stethoscope, FlaskConical, Pill
+  Paperclip, MessageSquare, Activity, HeartPulse, Stethoscope,
+  FlaskConical, Pill, BedDouble, ClipboardList, LogOut
 } from "lucide-react";
+
+const EVENT_ICONS: Record<string, any> = {
+  VITALS: HeartPulse,
+  CONSULTATION: Stethoscope,
+  DIAGNOSIS: Stethoscope,
+  PROCEDURE_ORDER: FlaskConical,
+  PROCEDURE_RESULT: FlaskConical,
+  PRESCRIPTION: Pill,
+  DISPENSED: Pill,
+  ADMISSION: BedDouble,
+  DOCTOR_REVIEW: Stethoscope,
+  NURSING_NOTE: ClipboardList,
+  MEDICATION_ORDER: Pill,
+  MEDICATION_ADMINISTERED: Pill,
+  DISCHARGE: LogOut,
+};
 
 export default function ClaimDetailPage() {
   const { id } = useParams();
   const router = useRouter();
 
   const [claim, setClaim] = useState<Claim | null>(null);
+  const [dto, setDto] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,10 +49,10 @@ export default function ClaimDetailPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [timeline, setTimeline] = useState<any>(null);
 
   useEffect(() => {
     load();
+    loadDTO();
     loadAttachments();
     loadMessages();
   }, [id]);
@@ -49,6 +68,16 @@ export default function ClaimDetailPage() {
       setClaim(null);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadDTO() {
+    try {
+      const res = await api.get(`/claims/${id}/full`);
+      setDto(res.data);
+    } catch (err) {
+      console.error("Failed to fetch claim detail:", err);
+      setDto(null);
     }
   }
 
@@ -276,54 +305,45 @@ export default function ClaimDetailPage() {
           <p className="text-xs text-slate-500 mt-1">Invoice: {claim.invoice.invoiceNumber}</p>
         </div>
       </div>
-        {/* Encounter & Clinical Timeline */}
-{timeline && (
-  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-    <h2 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-      <Activity size={18} className="text-rose-600" />
-      Encounter & Clinical Timeline
-    </h2>
 
-    <div className="flex items-center gap-6 text-sm text-slate-600 mb-5 pb-5 border-b border-slate-100">
-      <span>Check-In: {timeline.encounter.checkIn ? new Date(timeline.encounter.checkIn).toLocaleString() : "-"}</span>
-      <span>Check-Out: {timeline.encounter.checkOut ? new Date(timeline.encounter.checkOut).toLocaleString() : "-"}</span>
-    </div>
+      {/* Encounter & Clinical Timeline */}
+      {dto && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <h2 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+            <Activity size={18} className="text-rose-600" />
+            Encounter & Clinical Timeline
+          </h2>
 
-    {timeline.timeline.length === 0 ? (
-      <p className="text-sm text-slate-400">No clinical activity recorded for this visit.</p>
-    ) : (
-      <div className="space-y-3">
-        {timeline.timeline.map((event: any, i: number) => {
-          const iconMap: Record<string, any> = {
-            VITALS: HeartPulse,
-            CONSULTATION: Stethoscope,
-            DIAGNOSIS: Stethoscope,
-            PROCEDURE_ORDER: FlaskConical,
-            PROCEDURE_RESULT: FlaskConical,
-            PRESCRIPTION: Pill,
-            DISPENSED: Pill,
-          };
-          const Icon = iconMap[event.type] ?? Activity;
+          <div className="flex items-center gap-6 text-sm text-slate-600 mb-5 pb-5 border-b border-slate-100">
+            <span>Check-In: {dto.encounter.checkIn ? new Date(dto.encounter.checkIn).toLocaleString() : "-"}</span>
+            <span>Check-Out: {dto.encounter.checkOut ? new Date(dto.encounter.checkOut).toLocaleString() : "-"}</span>
+          </div>
 
-          return (
-            <div key={i} className="flex gap-3">
-              <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                <Icon size={13} className="text-slate-500" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-slate-700">{event.description}</p>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {new Date(event.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  {event.actor && ` · ${event.actorRole}: ${event.actor}`}
-                </p>
-              </div>
+          {dto.timeline.length === 0 ? (
+            <p className="text-sm text-slate-400">No clinical activity recorded for this visit.</p>
+          ) : (
+            <div className="space-y-3">
+              {dto.timeline.map((event: any, i: number) => {
+                const Icon = EVENT_ICONS[event.type] ?? Activity;
+                return (
+                  <div key={i} className="flex gap-3">
+                    <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                      <Icon size={13} className="text-slate-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-slate-700">{event.description}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {new Date(event.time).toLocaleString()}
+                        {event.actor && ` · ${event.actorRole}: ${event.actor}`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
-    )}
-  </div>
-)}
+          )}
+        </div>
+      )}
 
       {/* Charges */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -334,18 +354,34 @@ export default function ClaimDetailPage() {
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <th className="px-6 py-3">Description</th>
+              <th className="px-6 py-3">Code</th>
               <th className="px-6 py-3">Qty</th>
               <th className="px-6 py-3">Unit Price</th>
               <th className="px-6 py-3 text-right">Total</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {claim.invoice.charges.map((c) => (
+            {(dto?.invoice.charges ?? claim.invoice.charges).map((c: any) => (
               <tr key={c.id}>
                 <td className="px-6 py-3 text-slate-700">{c.description ?? "-"}</td>
+                <td className="px-6 py-3">
+                  {c.code && (
+                    <span className="font-mono text-xs bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5 text-blue-700">
+                      CPT {c.code}
+                    </span>
+                  )}
+                  {c.sku && (
+                    <span className="ml-1 font-mono text-xs bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 text-amber-700">
+                      SKU {c.sku}
+                    </span>
+                  )}
+                  {!c.code && !c.sku && <span className="text-xs text-slate-400">-</span>}
+                </td>
                 <td className="px-6 py-3 text-slate-600">{c.quantity}</td>
-                <td className="px-6 py-3 text-slate-600">₦{c.unitPrice.toLocaleString()}</td>
-                <td className="px-6 py-3 text-right font-medium text-slate-900">₦{c.totalPrice.toLocaleString()}</td>
+                <td className="px-6 py-3 text-slate-600">₦{(c.unitPrice ?? 0).toLocaleString()}</td>
+                <td className="px-6 py-3 text-right font-medium text-slate-900">
+                  ₦{(c.total ?? c.totalPrice ?? 0).toLocaleString()}
+                </td>
               </tr>
             ))}
           </tbody>
