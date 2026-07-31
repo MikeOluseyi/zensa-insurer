@@ -70,6 +70,10 @@ export default function ClaimDetailPage() {
   const [rejectionReason, setRejectionReason] = useState("");
 
   const [attachments, setAttachments] = useState<any[]>([]);
+  const [showAddAttachment, setShowAddAttachment] = useState(false);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentType, setAttachmentType] = useState("OTHER");
+  const [addingAttachment, setAddingAttachment] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -123,6 +127,23 @@ export default function ClaimDetailPage() {
       setAttachments([]);
     }
   }
+  async function handleAddAttachment(e: React.FormEvent) {
+  e.preventDefault();
+  if (!attachmentFile) return;
+
+  setAddingAttachment(true);
+  try {
+    await ClaimAPI.addAttachment(id as string, attachmentFile, attachmentType);
+    setAttachmentFile(null);
+    setAttachmentType("OTHER");
+    setShowAddAttachment(false);
+    loadAttachments();
+  } catch (err: any) {
+    alert(err?.response?.data?.error || "Failed to add attachment.");
+  } finally {
+    setAddingAttachment(false);
+  }
+}
 
   async function loadMessages() {
     try {
@@ -695,36 +716,23 @@ export default function ClaimDetailPage() {
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {attachments.map((a) => (
-              <a
-                key={a.id}
-                href={a.fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-4 px-6 py-3.5 hover:bg-blue-50/30 transition-colors group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                  <FileText size={16} className="text-blue-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">
-                    {a.fileName}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {a.type} ·{" "}
-                    {new Date(a.attachedAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-                <ArrowLeft
-                  size={16}
-                  className="text-slate-400 rotate-[-135deg] group-hover:text-blue-500 transition-colors"
-                />
-              </a>
-            ))}
+           {attachments.map((a) => (
+            <a
+    key={a.id}
+    href={`${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${a.fileUrl}`}
+    target="_blank"
+    rel="noreferrer"
+    className="flex items-center justify-between px-6 py-3 hover:bg-slate-50 transition-colors"
+  >
+    <div className="flex items-center gap-3">
+      <Paperclip size={14} className="text-slate-400" />
+      <div>
+        <p className="text-sm text-slate-800">{a.fileName}</p>
+        <p className="text-xs text-slate-400">{a.type} · {new Date(a.attachedAt).toLocaleDateString()}</p>
+      </div>
+    </div>
+  </a>
+))}
           </div>
         )}
       </div>
