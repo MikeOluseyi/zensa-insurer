@@ -696,43 +696,71 @@ export default function ClaimDetailPage() {
       )}
 
       {/* Attachments */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-            <Paperclip size={18} className="text-slate-600" />
-          </div>
-          <div>
-            <h2 className="font-bold text-slate-900">Attachments</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Documents from the hospital
-            </p>
-          </div>
-        </div>
-        {attachments.length === 0 ? (
-          <div className="text-center py-12">
-            <Paperclip size={24} className="mx-auto text-slate-300 mb-2" />
-            <p className="text-sm text-slate-400">
-              No attachments from the hospital yet.
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-100">
-          {attachments.map((a) => (
-  <button
-    key={a.id}
-    onClick={() => openAttachment(`/insurance-claims/attachments/download/${a.id}`, a.fileName)}
-    className="w-full flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition-colors text-left"
-  >
-    <Paperclip size={14} className="text-slate-400" />
-    <div>
-      <p className="text-sm text-slate-800">{a.fileName}</p>
-      <p className="text-xs text-slate-400">{a.type} · {new Date(a.attachedAt).toLocaleDateString()}</p>
+      <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+  <div className="flex items-center gap-3">
+    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+      <Paperclip size={18} className="text-slate-600" />
     </div>
+    <div>
+      <h2 className="font-bold text-slate-900">Attachments</h2>
+      <p className="text-xs text-slate-500 mt-0.5">
+        Documents from the hospital
+      </p>
+    </div>
+  </div>
+  <button
+    onClick={() => setShowAddAttachment(!showAddAttachment)}
+    className="text-sm text-blue-600 hover:text-blue-700 font-semibold"
+  >
+    + Add
   </button>
-))}
-          </div>
-        )}
+</div>
+
+{showAddAttachment && (
+  <form onSubmit={handleAddAttachment} className="p-6 border-b border-slate-100 bg-slate-50 space-y-3">
+    <div className="grid grid-cols-2 gap-3">
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">File</label>
+        <input
+          type="file"
+          accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx"
+          onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
+          className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm bg-white"
+          required
+        />
       </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1.5">Type</label>
+        <select
+          value={attachmentType}
+          onChange={(e) => setAttachmentType(e.target.value)}
+          className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm bg-white"
+        >
+          <option value="CLAIM">Claim</option>
+          <option value="AUTHORIZATION">Authorization</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+    </div>
+    {attachmentFile && (
+      <p className="text-xs text-slate-500">
+        {attachmentFile.name} · {(attachmentFile.size / 1024).toFixed(0)} KB
+      </p>
+    )}
+    <div className="flex justify-end gap-3">
+      <button type="button" onClick={() => setShowAddAttachment(false)} className="px-4 py-2 text-sm font-medium text-slate-600">
+        Cancel
+      </button>
+      <button
+        type="submit"
+        disabled={addingAttachment || !attachmentFile}
+        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium"
+      >
+        {addingAttachment ? <Loader2 size={14} className="animate-spin" /> : "Upload"}
+      </button>
+    </div>
+  </form>
+)}
 
       {/* Messages */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
