@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
+import { openAttachment } from "@/lib/fileUrl";
 import { ClaimAPI, Claim } from "@/services/claims";
 import ClaimStatusBadge from "@/components/claims/ClaimStatusBadge";
 import {
@@ -716,22 +717,18 @@ export default function ClaimDetailPage() {
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
-           {attachments.map((a) => (
-            <a
+          {attachments.map((a) => (
+  <button
     key={a.id}
-    href={`${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${a.fileUrl}`}
-    target="_blank"
-    rel="noreferrer"
-    className="flex items-center justify-between px-6 py-3 hover:bg-slate-50 transition-colors"
+    onClick={() => openAttachment(`/insurance-claims/attachments/download/${a.id}`, a.fileName)}
+    className="w-full flex items-center gap-3 px-6 py-3 hover:bg-slate-50 transition-colors text-left"
   >
-    <div className="flex items-center gap-3">
-      <Paperclip size={14} className="text-slate-400" />
-      <div>
-        <p className="text-sm text-slate-800">{a.fileName}</p>
-        <p className="text-xs text-slate-400">{a.type} · {new Date(a.attachedAt).toLocaleDateString()}</p>
-      </div>
+    <Paperclip size={14} className="text-slate-400" />
+    <div>
+      <p className="text-sm text-slate-800">{a.fileName}</p>
+      <p className="text-xs text-slate-400">{a.type} · {new Date(a.attachedAt).toLocaleDateString()}</p>
     </div>
-  </a>
+  </button>
 ))}
           </div>
         )}
