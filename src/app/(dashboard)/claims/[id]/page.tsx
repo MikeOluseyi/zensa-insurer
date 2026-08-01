@@ -761,6 +761,27 @@ export default function ClaimDetailPage() {
     </div>
   </form>
 )}
+        {attachments.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-10">No attachments yet.</p>
+          ) : (
+            <div className="divide-y divide-gray-50">
+             {attachments.map((a) => (
+  <button
+    key={a.id}
+    onClick={() => openAttachment(`/claim-Attachment/download/${a.id}`, a.fileName)}
+    className="w-full flex items-center justify-between px-6 py-3 hover:bg-slate-50 transition-colors text-left"
+  >
+    <div className="flex items-center gap-3">
+      <Paperclip size={14} className="text-slate-400" />
+      <div>
+        <p className="text-sm text-slate-800">{a.fileName}</p>
+        <p className="text-xs text-slate-400">{a.type} · {new Date(a.attachedAt).toLocaleDateString()}</p>
+      </div>
+    </div>
+  </button>
+))}
+            </div>
+          )}
 
       {/* Messages */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
