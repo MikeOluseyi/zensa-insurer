@@ -8,7 +8,7 @@ import {
   FileText,
   Users,
   ChevronRight,
-  Shield,
+  Shield, ShieldUser,
 } from "lucide-react";
 import Link from "next/link";
 import RoleGuard from "@/components/auth/RoleGuard";
@@ -37,6 +37,7 @@ export default function DashboardLayout({
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/claims", label: "Claims", icon: FileText },
     { href: "/plans", label: "Policy Management", icon: FileText },
+    { href: "/authorizations", label: "Authorization Requests", icon: ShieldUser },
     ...(user?.role === "MANAGER"
       ? [{ href: "/staff", label: "Staff", icon: Users }]
       : []),
